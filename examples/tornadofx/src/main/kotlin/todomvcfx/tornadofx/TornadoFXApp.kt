@@ -18,15 +18,11 @@ import tornadofx.*
 
 class TodoItem(text: String, completed: Boolean) {
 
-    val id = SimpleIntegerProperty( nextId() )
-    val text = SimpleStringProperty(text)
-    val completed = SimpleBooleanProperty(completed)
-
-    fun idProperty() = id
-
-    fun textProperty() = text
-
-    fun completedProperty() = completed
+    val idProperty = SimpleIntegerProperty( nextId() )
+    var id by idProperty
+    val textProperty = SimpleStringProperty(text)
+    val completedProperty = SimpleBooleanProperty(completed)
+    var completed by completedProperty
 
     companion object {
         private var idgen = 1 // faux static class member
@@ -48,8 +44,8 @@ class MainViewController : Controller() {
 
     fun getAll() = items
 
-    fun getCompleted() = items.filter( { itm -> itm.completed.get()} )
-    fun getActive() = items.filter( {itm->itm.completed.get().not()} )
+    fun getCompleted() = items.filter { it.completed }
+    fun getActive() = items.filter { !it.completed }
 }
 
 class MainView : View() {
@@ -66,34 +62,27 @@ class MainView : View() {
     init {
 
         addInput.setOnAction {
-            event ->
-                val newItem = TodoItem( addInput.text, false )
-                items.items.add( newItem )
-                controller.addItem( newItem )
-                addInput.clear()
-                selectAll.setSelected( false )
+            val newItem = TodoItem( addInput.text, false )
+            items.items.add( newItem )
+            controller.addItem( newItem )
+            addInput.clear()
+            selectAll.isSelected = false
         }
 
-        items.cellFactory = Callback{
-            lv ->
-                val cell = TodoItemListCell()
-                cell
-        }
+        items.cellFactory = Callback { TodoItemListCell() }
 
         // switch this to binding
-        selectAll.setVisible(false)
+        selectAll.isVisible = false
         items.itemsProperty().onChange {
-            c ->
-                selectAll.setVisible( items.items.isEmpty().not() )
-                updateItemsLeftLabel()
+            selectAll.isVisible = items.items.isNotEmpty()
+            updateItemsLeftLabel()
         }
 
-        selectAll.selectedProperty().onChange {
-                    nv ->
-                    items.items.forEach { itm ->
-                        itm.completed.set( nv?:false )  // also sets model b/c of reference
-                    }
-                }
+        selectAll.selectedProperty().onChange { nv ->
+            items.items.forEach { itm ->
+                itm.completed = nv ?: false  // also sets model b/c of reference
+            }
+        }
 
         itemsLeftLabel.text = "0 items left"
 
@@ -104,8 +93,7 @@ class MainView : View() {
     fun completed() { items.items = FXCollections.observableArrayList((controller.getCompleted()))}
 
     fun updateItemsLeftLabel() {
-        val numActives = items.items.filter({ itm -> !itm.completed.get() }).count()
-        itemsLeftLabel.text = numActives.toString() + " items left"
+        itemsLeftLabel.text = "${items.items.count { !it.completed }} items left"
     }
 }
 
@@ -114,12 +102,9 @@ class TodoItemListCell : ListCell<TodoItem>() {
     override fun updateItem(item: TodoItem?, empty: Boolean) {
         super.updateItem(item, empty)
         if( empty || item == null) {
-
             text = null
             graphic = null
-
         } else {
-
             text = null
             graphic = readCache(item).root
          }
@@ -132,7 +117,7 @@ class TodoItemListCell : ListCell<TodoItem>() {
 
         fun readCache(item : TodoItem) : ItemFragment {
 
-            val id = item.id.get()
+            val id = item.id
 
             if( !cellCache.containsKey(id) ) {
 
@@ -159,16 +144,15 @@ class ItemFragment : Fragment() {
     var item : TodoItem? = null
 
     val controller : MainViewController by inject()
+    val mainView: MainView by inject()
 
     init {
         deleteButton.visibleProperty().bind( root.hoverProperty() )
-
     }
 
     fun delete() {
         if( item != null ) {
-            val mv : MainView = find(MainView::class)
-            mv.items.items.remove( item )
+            mainView.items.items.remove( item )
             controller.removeItem( item!! )
         }
     }
@@ -178,17 +162,14 @@ class ItemFragment : Fragment() {
 
         this.item = item
 
-        completed.bind( item.completedProperty() )
+        completed.bind( item.completedProperty )
 
-        val mv : MainView = find(MainView::class)
-
-        item.completed.addListener(
-                {   obs,ov,nv ->
-                        contentLabel.toggleClass("strikethrough", nv)
-                        mv.updateItemsLeftLabel()
-                })
-        contentLabel.textProperty().bind( item.textProperty() )
-        contentInput.textProperty().bindBidirectional( item.textProperty() )
+        item.completedProperty.onChange { nv ->
+            contentLabel.toggleClass("strikethrough", nv ?: false)
+            mainView.updateItemsLeftLabel()
+        }
+        contentLabel.textProperty().bind( item.textProperty )
+        contentInput.textProperty().bindBidirectional( item.textProperty )
 
         contentLabel.setOnMouseClicked { event ->
             if (event.clickCount > 1) {
@@ -200,20 +181,20 @@ class ItemFragment : Fragment() {
             toggleEditMode(false)
         }
 
-        contentInput.focusedProperty().addListener { observable, oldValue, newValue ->
-            if (!newValue) {
+        contentInput.focusedProperty().onChange { newValue ->
+            if (!(newValue ?: false)) {
                 toggleEditMode(false)
             }
         }
     }
 
     fun toggleEditMode(edit : Boolean) {
-        contentInput.setVisible(edit)
+        contentInput.isVisible = edit
         if( edit ) {
             contentInput.requestFocus()
         }
-        contentBox.setVisible(!edit)
-        completed.setVisible(!edit)
+        contentBox.isVisible = !edit
+        completed.isVisible = !edit
     }
 }
 
