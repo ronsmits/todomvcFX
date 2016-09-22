@@ -69,7 +69,7 @@ class MainView : View() {
         items.items.addListener( TodoItemListChangeListener() )
 
         selectAll.selectedProperty().addListener(
-                ChangeListener {
+                 {
                 obs,ov,nv ->
                         items.items.forEach { itm ->
                             itm.completed.set( nv )
@@ -145,6 +145,8 @@ class ItemFragment : Fragment() {
     val completed : CheckBox by fxid()
     val contentLabel : Label by fxid()  // TODO: switch over to edit mode to update text
     val deleteButton : Button by fxid()
+    val contentBox : HBox by fxid()
+    val contentInput : TextField by fxid()
 
     var item : TodoItem? = null
 
@@ -183,8 +185,33 @@ class ItemFragment : Fragment() {
                         }
                         mv.updateItemsLeftLabel()
                 })
-        contentLabel.textProperty().bindBidirectional( item.textProperty() )
+        contentLabel.textProperty().bind( item.textProperty() )
+        contentInput.textProperty().bindBidirectional( item.textProperty() )
 
+        contentLabel.setOnMouseClicked { event ->
+            if (event.clickCount > 1) {
+                toggleEditMode(true)
+            }
+        }
+
+        contentInput.setOnAction {
+            toggleEditMode(false)
+        }
+
+        contentInput.focusedProperty().addListener { observable, oldValue, newValue ->
+            if (!newValue) {
+                toggleEditMode(false)
+            }
+        }
+    }
+
+    fun toggleEditMode(edit : Boolean) {
+        contentInput.setVisible(edit)
+        if( edit ) {
+            contentInput.requestFocus()
+        }
+        contentBox.setVisible(!edit)
+        completed.setVisible(!edit)
     }
 }
 
