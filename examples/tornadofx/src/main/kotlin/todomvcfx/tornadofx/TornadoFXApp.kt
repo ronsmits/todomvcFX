@@ -3,13 +3,16 @@ package todomvcfx.tornadofx
 import javafx.application.Application
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleIntegerProperty
+import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
+import javafx.collections.ObservableList
 import javafx.scene.control.*
 import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import javafx.util.Callback
 import tornadofx.*
+import kotlin.properties.ObservableProperty
 
 /**
  *
@@ -32,20 +35,43 @@ class TodoItem(text: String, completed: Boolean) {
 
 class MainViewController : Controller() {
 
-    val items : MutableList<TodoItem> = mutableListOf()
+    private val todoItemModel : MutableList<TodoItem> = mutableListOf()
+
+    //
+    // View binds to a model that's always available via inject()
+    //
+    var todoCursor = SimpleObjectProperty(FXCollections.observableArrayList(todoItemModel))
+
+    enum class FilterType { NO_FILTER, COMPLETED, ACTIVE }
+
+    private var filterApplied = FilterType.NO_FILTER
 
     fun addItem( item : TodoItem ) {
-        items.add( item )
+        todoItemModel.add( item )
+        if( filterApplied != FilterType.COMPLETED ) {
+            todoCursor.get().add(item)
+        }
     }
 
     fun removeItem( item : TodoItem ) {
-        items.remove( item )
+        todoItemModel.remove( item )
+        todoCursor.get().add( item )
     }
 
-    fun getAll() = items
+    fun noFilter() {
+        filterApplied = FilterType.NO_FILTER
+        todoCursor.set( FXCollections.observableArrayList(todoItemModel) )
+    }
 
-    fun getCompleted() = items.filter { it.completed }
-    fun getActive() = items.filter { !it.completed }
+    fun filterCompleted() {
+        filterApplied = FilterType.COMPLETED
+        todoCursor.set( FXCollections.observableArrayList(todoItemModel.filter( {itm -> itm.completed } ) ) )
+    }
+
+    fun filterActive() {
+        filterApplied = FilterType.ACTIVE
+        todoCursor.set( FXCollections.observableArrayList(todoItemModel.filter( {itm -> itm.completed.not()} ) ) )
+    }
 }
 
 class MainView : View() {
@@ -53,7 +79,7 @@ class MainView : View() {
     override val root: VBox by fxml("/MainView.fxml")
 
     val addInput : TextField by fxid()
-    val items : ListView<TodoItem> by fxid()
+    val lvItems : ListView<TodoItem> by fxid()
     val selectAll : CheckBox by fxid()
     val itemsLeftLabel : Label by fxid()
 
@@ -61,39 +87,39 @@ class MainView : View() {
 
     init {
 
+        lvItems.itemsProperty().bind( controller.todoCursor )
+
         addInput.setOnAction {
             val newItem = TodoItem( addInput.text, false )
-            items.items.add( newItem )
             controller.addItem( newItem )
             addInput.clear()
             selectAll.isSelected = false
         }
 
-        items.cellFactory = Callback { TodoItemListCell() }
+        lvItems.cellFactory = Callback { TodoItemListCell() }
 
         // switch this to binding
         selectAll.isVisible = false
-        items.itemsProperty().onChange {
-            selectAll.isVisible = items.items.isNotEmpty()
+        lvItems.itemsProperty().onChange {
+            selectAll.isVisible = lvItems.items.isNotEmpty()
             updateItemsLeftLabel()
         }
 
         selectAll.selectedProperty().onChange { nv ->
-            items.items.forEach { itm ->
+            lvItems.items.forEach { itm ->
                 itm.completed = nv ?: false  // also sets model b/c of reference
             }
         }
 
         itemsLeftLabel.text = "0 items left"
-
     }
 
-    fun all() { items.items = FXCollections.observableArrayList(controller.getAll()) }
-    fun active() { items.items = FXCollections.observableArrayList(controller.getActive() )}
-    fun completed() { items.items = FXCollections.observableArrayList((controller.getCompleted()))}
+    fun all() { controller.noFilter() }
+    fun active() { controller.filterActive()  }
+    fun completed() { controller.filterCompleted() }
 
     fun updateItemsLeftLabel() {
-        itemsLeftLabel.text = "${items.items.count { !it.completed }} items left"
+        itemsLeftLabel.text = "${lvItems.items.count { !it.completed }} items left"
     }
 }
 
@@ -112,7 +138,7 @@ class TodoItemListCell : ListCell<TodoItem>() {
 
     companion object {
 
-        // TODO: clean up deletions from cache after removal from UI
+        // TODO: move to controller so that cache can be cleaned up with business logic (add, remove)
         var cellCache : MutableMap<Int, ItemFragment> = mutableMapOf()
 
         fun readCache(item : TodoItem) : ItemFragment {
@@ -152,7 +178,7 @@ class ItemFragment : Fragment() {
 
     fun delete() {
         if( item != null ) {
-            mainView.items.items.remove( item )
+            mainView.lvItems.items.remove( item )
             controller.removeItem( item!! )
         }
     }
@@ -199,7 +225,6 @@ class ItemFragment : Fragment() {
 }
 
 class TornadoFXApp : App(MainView::class) {
-
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
