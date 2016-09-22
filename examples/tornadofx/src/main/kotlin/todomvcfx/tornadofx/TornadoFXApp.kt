@@ -6,6 +6,7 @@ import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.beans.value.ChangeListener
+import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.event.EventHandler
 import javafx.scene.Parent
@@ -39,6 +40,24 @@ class TodoItem(text: String, completed: Boolean) {
     }
 }
 
+class MainViewController : Controller() {
+
+    val items : MutableList<TodoItem> = mutableListOf()
+
+    fun addItem( item : TodoItem ) {
+        items.add( item )
+    }
+
+    fun removeItem( item : TodoItem ) {
+        items.remove( item )
+    }
+
+    fun getAll() = items
+
+    fun getCompleted() = items.filter( { itm -> itm.completed.get()} )
+    fun getActive() = items.filter( {itm->itm.completed.get().not()} )
+}
+
 class MainView : View() {
 
     override val root: VBox by fxml("/MainView.fxml")
@@ -48,12 +67,15 @@ class MainView : View() {
     val selectAll : CheckBox by fxid()
     val itemsLeftLabel : Label by fxid()
 
+    val controller : MainViewController by inject()
+
     init {
 
         addInput.onAction = EventHandler{
             event ->
                 val newItem = TodoItem( addInput.text, false )
                 items.items.add( newItem )
+                controller.addItem( newItem )
                 addInput.clear()
                 selectAll.setSelected( false )
         }
@@ -72,7 +94,7 @@ class MainView : View() {
                  {
                 obs,ov,nv ->
                         items.items.forEach { itm ->
-                            itm.completed.set( nv )
+                            itm.completed.set( nv )  // also sets model b/c of reference
                         }
             })
 
@@ -84,9 +106,9 @@ class MainView : View() {
     // Will need to introduce a tfx Controller() w. a model to support a divergence between the data (all items) and
     // what may be shown in the ListView (only completeds, only actives)
     //
-    fun all() {}  // TODO: implement
-    fun active() {}  // TODO: implement
-    fun completed() {}  // TODO: implement
+    fun all() { items.items = FXCollections.observableArrayList(controller.getAll()) }
+    fun active() { items.items = FXCollections.observableArrayList(controller.getActive() )}
+    fun completed() { items.items = FXCollections.observableArrayList((controller.getCompleted()))}
 
     inner class TodoItemListChangeListener : ListChangeListener<TodoItem> {
         override fun onChanged(c: ListChangeListener.Change<out TodoItem>?) {
@@ -143,12 +165,14 @@ class ItemFragment : Fragment() {
     override val root: HBox by fxml("/ItemFragment.fxml")
 
     val completed : CheckBox by fxid()
-    val contentLabel : Label by fxid()  // TODO: switch over to edit mode to update text
+    val contentLabel : Label by fxid()
     val deleteButton : Button by fxid()
     val contentBox : HBox by fxid()
     val contentInput : TextField by fxid()
 
     var item : TodoItem? = null
+
+    val controller : MainViewController by inject()
 
     init {
         deleteButton.visibleProperty().bind( root.hoverProperty() );
@@ -159,6 +183,7 @@ class ItemFragment : Fragment() {
         if( item != null ) {
             val mv : MainView = find(MainView::class)
             mv.items.items.remove( item )
+            controller.removeItem( item!! )
         }
     }
 
