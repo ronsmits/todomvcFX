@@ -1,17 +1,11 @@
 package todomvcfx.tornadofx
 
 import javafx.application.Application
-import javafx.beans.binding.When
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleStringProperty
-import javafx.beans.value.ChangeListener
 import javafx.collections.FXCollections
-import javafx.collections.ListChangeListener
-import javafx.event.EventHandler
-import javafx.scene.Parent
 import javafx.scene.control.*
-import javafx.scene.control.cell.TextFieldListCell
 import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import javafx.util.Callback
@@ -35,7 +29,7 @@ class TodoItem(text: String, completed: Boolean) {
     fun completedProperty() = completed
 
     companion object {
-        var idgen = 1 // faux static class member
+        private var idgen = 1 // faux static class member
         fun nextId() = idgen++
     }
 }
@@ -71,7 +65,7 @@ class MainView : View() {
 
     init {
 
-        addInput.onAction = EventHandler{
+        addInput.setOnAction {
             event ->
                 val newItem = TodoItem( addInput.text, false )
                 items.items.add( newItem )
@@ -88,36 +82,28 @@ class MainView : View() {
 
         // switch this to binding
         selectAll.setVisible(false)
-        items.items.addListener( TodoItemListChangeListener() )
+        items.itemsProperty().onChange {
+            c ->
+                selectAll.setVisible( items.items.isEmpty().not() )
+                updateItemsLeftLabel()
+        }
 
-        selectAll.selectedProperty().addListener(
-                 {
-                obs,ov,nv ->
-                        items.items.forEach { itm ->
-                            itm.completed.set( nv )  // also sets model b/c of reference
-                        }
-            })
+        selectAll.selectedProperty().onChange {
+                    nv ->
+                    items.items.forEach { itm ->
+                        itm.completed.set( nv?:false )  // also sets model b/c of reference
+                    }
+                }
 
         itemsLeftLabel.text = "0 items left"
 
     }
 
-    //
-    // Will need to introduce a tfx Controller() w. a model to support a divergence between the data (all items) and
-    // what may be shown in the ListView (only completeds, only actives)
-    //
     fun all() { items.items = FXCollections.observableArrayList(controller.getAll()) }
     fun active() { items.items = FXCollections.observableArrayList(controller.getActive() )}
     fun completed() { items.items = FXCollections.observableArrayList((controller.getCompleted()))}
 
-    inner class TodoItemListChangeListener : ListChangeListener<TodoItem> {
-        override fun onChanged(c: ListChangeListener.Change<out TodoItem>?) {
-            selectAll.setVisible( items.items.isEmpty().not() )
-            updateItemsLeftLabel()
-        }
-    }
-
-    public fun updateItemsLeftLabel() {
+    fun updateItemsLeftLabel() {
         val numActives = items.items.filter({ itm -> !itm.completed.get() }).count()
         itemsLeftLabel.text = numActives.toString() + " items left"
     }
@@ -129,13 +115,13 @@ class TodoItemListCell : ListCell<TodoItem>() {
         super.updateItem(item, empty)
         if( empty || item == null) {
 
-            setText(null)
-            setGraphic(null)
+            text = null
+            graphic = null
 
         } else {
 
-            setText( null )
-            setGraphic( readCache(item).root )
+            text = null
+            graphic = readCache(item).root
          }
     }
 
@@ -155,7 +141,7 @@ class TodoItemListCell : ListCell<TodoItem>() {
                 cellCache.put( id, itemFragment )
             }
 
-            return cellCache.get(id)!!
+            return cellCache[id]!!
         }
     }
 }
@@ -175,7 +161,7 @@ class ItemFragment : Fragment() {
     val controller : MainViewController by inject()
 
     init {
-        deleteButton.visibleProperty().bind( root.hoverProperty() );
+        deleteButton.visibleProperty().bind( root.hoverProperty() )
 
     }
 
@@ -197,17 +183,8 @@ class ItemFragment : Fragment() {
         val mv : MainView = find(MainView::class)
 
         item.completed.addListener(
-                ChangeListener {
-                    obs,ov,nv ->
-                        if( nv ) {
-                            if( !contentLabel.styleClass.contains( "strikethrough") ) {
-                                contentLabel.styleClass.add( "strikethrough" )
-                            }
-                        } else {
-                            if( contentLabel.styleClass.contains("strikethrough") ) {
-                                contentLabel.styleClass.remove("strikethrough")
-                            }
-                        }
+                {   obs,ov,nv ->
+                        contentLabel.toggleClass("strikethrough", nv)
                         mv.updateItemsLeftLabel()
                 })
         contentLabel.textProperty().bind( item.textProperty() )
