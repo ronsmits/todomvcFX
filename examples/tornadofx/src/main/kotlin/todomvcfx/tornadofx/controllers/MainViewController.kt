@@ -1,5 +1,7 @@
-package todomvcfx.tornadofx
+package todomvcfx.tornadofx.controllers
 
+import todomvcfx.tornadofx.model.TodoItem
+import todomvcfx.tornadofx.model.TodoItemModel
 import tornadofx.Controller
 
 /**
@@ -18,11 +20,11 @@ class MainViewController : Controller() {
 
     private val todoItemModel = TodoItemModel()
 
-    fun addItem( item : TodoItem ) {
+    fun addItem( item : TodoItem) {
         todoItemModel.add( item )
     }
 
-    fun removeItem( item : TodoItem ) {
+    fun removeItem( item : TodoItem) {
         todoItemModel.remove( item )
     }
 
@@ -30,3 +32,4 @@ class MainViewController : Controller() {
 
     val viewableItemsProperty = todoItemModel.viewableItemsProperty
 }
+

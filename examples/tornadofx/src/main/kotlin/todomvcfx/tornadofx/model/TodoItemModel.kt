@@ -1,4 +1,4 @@
-package todomvcfx.tornadofx
+package todomvcfx.tornadofx.model
 
 import javafx.beans.property.*
 import javafx.collections.FXCollections
@@ -8,9 +8,7 @@ import tornadofx.onChange
 import tornadofx.setValue
 
 /**
- * Model components for the TornadoFX version of the TodoItem app
- *
- * TodoItem is a property-based domain object for the app.  It includes an id generation function.
+ * Model component for the TornadoFX version of the TodoItem app
  *
  * TodoItem model is a RAM-based store of the model objects and a cursor into the viewable objects.  Callers add
  * and remove items using the items/itemsProperty members.  Since the domain object is property-based, updates are
@@ -21,20 +19,6 @@ import tornadofx.setValue
  *
  * @author carl
  */
-class TodoItem(text: String, completed: Boolean) {
-
-    val idProperty = SimpleIntegerProperty( nextId() )
-    var id by idProperty
-    val textProperty = SimpleStringProperty(text)
-    val completedProperty = SimpleBooleanProperty(completed)
-    var completed by completedProperty
-
-    companion object {
-        private var idgen = 1 // faux static class member
-        fun nextId() = idgen++
-    }
-}
-
 class TodoItemModel {
 
     val itemsProperty : ObjectProperty<ObservableList<TodoItem>> = SimpleObjectProperty(FXCollections.observableArrayList())
@@ -67,4 +51,3 @@ class TodoItemModel {
         })
     }
 }
-

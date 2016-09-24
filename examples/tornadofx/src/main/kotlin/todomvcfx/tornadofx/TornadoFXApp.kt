@@ -1,6 +1,7 @@
 package todomvcfx.tornadofx
 
 import javafx.application.Application
+import todomvcfx.tornadofx.views.MainView
 import tornadofx.App
 
 /**
@@ -8,11 +9,8 @@ import tornadofx.App
  *
  * @author carl
  */
-class TornadoFXApp : App(MainView::class) {
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            Application.launch(TornadoFXApp::class.java)
-        }
-    }
+class TornadoFXApp : App(MainView::class)
+
+fun main(args: Array<String>) {
+    Application.launch(TornadoFXApp::class.java, *args)
 }
