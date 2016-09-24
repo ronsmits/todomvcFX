@@ -11,6 +11,7 @@ import javafx.scene.control.*
 import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import javafx.util.Callback
+import todomvcfx.tornadofx.model.TodoItem
 import tornadofx.*
 import kotlin.properties.ObservableProperty
 
@@ -19,19 +20,7 @@ import kotlin.properties.ObservableProperty
  * @author carl
  */
 
-class TodoItem(text: String, completed: Boolean) {
 
-    val idProperty = SimpleIntegerProperty( nextId() )
-    var id by idProperty
-    val textProperty = SimpleStringProperty(text)
-    val completedProperty = SimpleBooleanProperty(completed)
-    var completed by completedProperty
-
-    companion object {
-        private var idgen = 1 // faux static class member
-        fun nextId() = idgen++
-    }
-}
 
 class MainViewController : Controller() {
 
@@ -224,11 +213,8 @@ class ItemFragment : Fragment() {
     }
 }
 
-class TornadoFXApp : App(MainView::class) {
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            Application.launch(TornadoFXApp::class.java)
-        }
-    }
+class TornadoFXApp : App(MainView::class)
+
+fun main(args: Array<String>) {
+    Application.launch(TornadoFXApp::class.java, *args)
 }
