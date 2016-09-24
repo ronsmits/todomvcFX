@@ -10,7 +10,7 @@ import tornadofx.Controller
  * A TornadoFX Controller object (not a JavaFX Controller)
  *
  * Mediates between the UI, which binds to the viewableItemsProperty and the filterByProperty, and the model which
- * is updated by a pair of functions.
+ * is updated by a pair of functions.  The itemsProperty can also be used to get at the unfiltered model.
  *
  * Updates coming from the UI are handled automatically since the domain object, TodoItem, is JavaFX property-based
  *
@@ -31,5 +31,7 @@ class MainViewController : Controller() {
     val filterByProperty = todoItemModel.filterByProperty
 
     val viewableItemsProperty = todoItemModel.viewableItemsProperty
+
+    val itemsProperty = todoItemModel.itemsProperty
 }
 

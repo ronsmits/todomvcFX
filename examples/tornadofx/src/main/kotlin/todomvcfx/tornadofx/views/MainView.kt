@@ -1,5 +1,6 @@
 package todomvcfx.tornadofx.views
 
+import javafx.beans.binding.Bindings
 import javafx.beans.binding.When
 import javafx.scene.control.*
 import javafx.scene.layout.VBox
@@ -54,12 +55,15 @@ class MainView : View() {
 
         lvItems.cellFactory = Callback { TodoItemListCell() }
 
-        // switch this to binding
-        selectAll.isVisible = false
         lvItems.itemsProperty().onChange {
-            selectAll.isVisible = lvItems.items.isNotEmpty()
             updateItemsLeftLabel()
         }
+
+        selectAll.visibleProperty().bind(
+                Bindings.size(
+                        controller.viewableItemsProperty.get()
+                ).greaterThan(0)
+        )
 
         selectAll.selectedProperty().onChange { nv ->
             lvItems.items.forEach { itm ->
