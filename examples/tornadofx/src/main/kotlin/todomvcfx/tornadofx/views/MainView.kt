@@ -2,6 +2,7 @@ package todomvcfx.tornadofx.views
 
 import javafx.beans.binding.Bindings
 import javafx.beans.binding.When
+import javafx.collections.ListChangeListener
 import javafx.scene.control.*
 import javafx.scene.layout.VBox
 import javafx.util.Callback
@@ -23,7 +24,7 @@ class MainView : View() {
     val lvItems : ListView<TodoItem> by fxid()
     val selectAll : CheckBox by fxid()
     val itemsLeftLabel : Label by fxid()
-    val showAll : ToggleButton by fxid()
+    val stateGroup : ToggleGroup by fxid()
     val showActive : ToggleButton by fxid()
     val showCompleted : ToggleButton by fxid()
 
@@ -32,8 +33,6 @@ class MainView : View() {
     init {
 
         lvItems.itemsProperty().bind( controller.viewableItemsProperty )
-
-        val stateGroup = showAll.toggleGroup
 
         controller.filterByProperty.bind(
 
@@ -55,9 +54,11 @@ class MainView : View() {
 
         lvItems.cellFactory = Callback { TodoItemListCell() }
 
-        lvItems.itemsProperty().onChange {
-            updateItemsLeftLabel()
-        }
+        controller.itemsProperty.get().addListener(
+            ListChangeListener<TodoItem> {
+                change ->
+                    updateItemsLeftLabel()
+        })
 
         selectAll.visibleProperty().bind(
                 Bindings.size(
@@ -75,6 +76,6 @@ class MainView : View() {
     }
 
     fun updateItemsLeftLabel() {
-        itemsLeftLabel.text = "${lvItems.items.count { !it.completed }} items left"
+        itemsLeftLabel.text = "${controller.itemsProperty.get().count { it.completed.not() }} items left"
     }
 }
