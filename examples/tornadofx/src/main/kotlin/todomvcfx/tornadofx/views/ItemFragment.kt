@@ -37,7 +37,6 @@ class ItemFragment : Fragment() {
 
     fun delete() {
         if( item != null ) {
-            mainView.lvItems.items.remove( item )
             controller.removeItem( item!! )
         }
     }
