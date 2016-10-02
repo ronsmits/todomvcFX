@@ -30,11 +30,6 @@ class TodoItemModel {
     val filterByProperty: ObjectProperty<Predicate<in TodoItem>>
         get() = viewableItemsProperty.get().predicateProperty()
 
-    /*
-        val filterByProperty: ObjectProperty<Predicate<in TodoItem>>?
-        get() = viewableItemsProperty.get().predicateProperty()
-     */
-
     fun add(tdi: TodoItem) {
         itemsProperty.get().add(tdi)
     }
