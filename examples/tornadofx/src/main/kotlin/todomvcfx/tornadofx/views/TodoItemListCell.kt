@@ -1,6 +1,7 @@
 package todomvcfx.tornadofx.views
 
 import javafx.scene.control.ListCell
+import todomvcfx.tornadofx.controllers.MainViewController
 import todomvcfx.tornadofx.model.TodoItem
 import tornadofx.find
 
@@ -10,6 +11,8 @@ import tornadofx.find
  */
 class TodoItemListCell : ListCell<TodoItem>() {
 
+    val controller : MainViewController = find(MainViewController::class)
+
     override fun updateItem(item: TodoItem?, empty: Boolean) {
         super.updateItem(item, empty)
         if( empty || item == null) {
@@ -17,27 +20,8 @@ class TodoItemListCell : ListCell<TodoItem>() {
             graphic = null
         } else {
             text = null
-            graphic = readCache(item).root
+            graphic = controller.readCache(item).root
         }
     }
 
-    companion object {
-
-        // TODO: move to controller so that cache can be cleaned up with business logic (add, remove)
-        var cellCache : MutableMap<Int, ItemFragment> = mutableMapOf()
-
-        fun readCache(item : TodoItem) : ItemFragment {
-
-            val id = item.id
-
-            if( !cellCache.containsKey(id) ) {
-
-                val itemFragment = find(ItemFragment::class)  // prototype
-                itemFragment.load( item )
-                cellCache.put( id, itemFragment )
-            }
-
-            return cellCache[id]!!
-        }
-    }
 }

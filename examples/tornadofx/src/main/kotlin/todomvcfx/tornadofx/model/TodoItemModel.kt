@@ -3,9 +3,11 @@ package todomvcfx.tornadofx.model
 import javafx.beans.property.*
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
+import javafx.collections.transformation.FilteredList
 import tornadofx.getValue
 import tornadofx.onChange
 import tornadofx.setValue
+import java.util.function.Predicate
 
 /**
  * Model component for the TornadoFX version of the TodoItem app
@@ -21,33 +23,23 @@ import tornadofx.setValue
  */
 class TodoItemModel {
 
-    val itemsProperty : ObjectProperty<ObservableList<TodoItem>> = SimpleObjectProperty(FXCollections.observableArrayList())
-    var items by itemsProperty
+    val itemsProperty : ReadOnlyObjectProperty<ObservableList<TodoItem>> = SimpleObjectProperty(FXCollections.observableArrayList())
 
-    val viewableItemsProperty : ObjectProperty<ObservableList<TodoItem>> = SimpleObjectProperty(FXCollections.observableArrayList())
-    var viewableItems by viewableItemsProperty
+    val viewableItemsProperty : ReadOnlyObjectProperty<FilteredList<TodoItem>> = SimpleObjectProperty(FilteredList(itemsProperty.get()))
 
-    val filterByProperty = SimpleObjectProperty({ p: TodoItem -> true })  // show all
-    var filterBy by filterByProperty
+    val filterByProperty: ObjectProperty<Predicate<in TodoItem>>
+        get() = viewableItemsProperty.get().predicateProperty()
+
+    /*
+        val filterByProperty: ObjectProperty<Predicate<in TodoItem>>?
+        get() = viewableItemsProperty.get().predicateProperty()
+     */
 
     fun add(tdi: TodoItem) {
-        if( filterBy(tdi) ) {
-            items.add(tdi)
-            viewableItems.add(tdi)
-        }
+        itemsProperty.get().add(tdi)
     }
 
-    fun remove(tdi: TodoItem) {
-        if( filterBy(tdi) ) {
-            items.remove(tdi)
-            viewableItems.remove(tdi)
-        }
-    }
-
-    init {
-
-        filterByProperty.onChange( {
-            viewableItems.setAll( items.filtered { tdi -> filterBy(tdi) })
-        })
+    fun remove(tdi: TodoItem) : Boolean {
+        return itemsProperty.get().remove(tdi)
     }
 }

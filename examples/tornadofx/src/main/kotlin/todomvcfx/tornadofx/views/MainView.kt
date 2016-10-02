@@ -2,6 +2,7 @@ package todomvcfx.tornadofx.views
 
 import javafx.beans.binding.Bindings
 import javafx.beans.binding.When
+import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.ListChangeListener
 import javafx.scene.control.*
 import javafx.scene.layout.VBox
@@ -10,6 +11,7 @@ import todomvcfx.tornadofx.controllers.MainViewController
 import todomvcfx.tornadofx.model.TodoItem
 import tornadofx.View
 import tornadofx.onChange
+import java.util.function.Predicate
 
 /**
  * View component for the main UI
@@ -37,12 +39,13 @@ class MainView : View() {
         controller.filterByProperty.bind(
 
                 When(stateGroup.selectedToggleProperty().isEqualTo(showActive))
-                        .then( {tdi: TodoItem -> tdi.completed.not()} )
+                        .then( SimpleObjectProperty<Predicate<TodoItem>>( Predicate<TodoItem>( {tdi -> tdi.completed.not()} ) ) )
                         .otherwise(
                                 When(stateGroup.selectedToggleProperty().isEqualTo(showCompleted))
-                                        .then( {tdi: TodoItem -> tdi.completed })
-                                        .otherwise( {tdi: TodoItem -> true })
+                                        .then( SimpleObjectProperty<Predicate<TodoItem>>( Predicate<TodoItem>( {tdi -> tdi.completed} ) ) )
+                                        .otherwise( SimpleObjectProperty<Predicate<TodoItem>>( Predicate<TodoItem>( {tdi -> true} ) ))
                         )
+
         )
 
         addInput.setOnAction {
