@@ -1,12 +1,11 @@
 package todomvcfx.tornadofx.model
 
-import javafx.beans.property.*
+import javafx.beans.property.ObjectProperty
+import javafx.beans.property.ReadOnlyObjectProperty
+import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.collections.transformation.FilteredList
-import tornadofx.getValue
-import tornadofx.onChange
-import tornadofx.setValue
 import java.util.function.Predicate
 
 /**

@@ -71,7 +71,7 @@ class MainView : View() {
 
         selectAll.selectedProperty().onChange { nv ->
             lvItems.items.forEach { itm ->
-                itm.completed = nv ?: false  // also sets model b/c of reference
+                itm.completed = nv  // also sets model b/c of reference
             }
         }
 

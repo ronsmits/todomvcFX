@@ -1,12 +1,10 @@
 package todomvcfx.tornadofx.controllers
 
-import javafx.beans.property.ObjectProperty
 import todomvcfx.tornadofx.model.TodoItem
 import todomvcfx.tornadofx.model.TodoItemModel
 import todomvcfx.tornadofx.views.ItemFragment
 import tornadofx.Controller
 import tornadofx.find
-import java.util.function.Predicate
 
 /**
  * Controller class for the TornadoFX version of the TodoItem app
