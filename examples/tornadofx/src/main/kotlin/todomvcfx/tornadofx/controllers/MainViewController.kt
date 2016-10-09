@@ -2,9 +2,7 @@ package todomvcfx.tornadofx.controllers
 
 import todomvcfx.tornadofx.model.TodoItem
 import todomvcfx.tornadofx.model.TodoItemModel
-import todomvcfx.tornadofx.views.ItemFragment
 import tornadofx.Controller
-import tornadofx.find
 
 /**
  * Controller class for the TornadoFX version of the TodoItem app
@@ -21,17 +19,13 @@ import tornadofx.find
 class MainViewController : Controller() {
 
     private val todoItemModel = TodoItemModel()
-    private val cellCache : MutableMap<Int, ItemFragment> = mutableMapOf()
 
     fun addItem( item : TodoItem) {
         todoItemModel.add( item )
     }
 
     fun removeItem( item : TodoItem) {
-        val removed = todoItemModel.remove( item )
-        if( removed ) {
-            removeItemFromCache(item)
-        }
+        todoItemModel.remove( item )
     }
 
     val filterByProperty = todoItemModel.filterByProperty
@@ -39,23 +33,5 @@ class MainViewController : Controller() {
     val viewableItemsProperty = todoItemModel.viewableItemsProperty
 
     val itemsProperty = todoItemModel.itemsProperty
-
-    fun readCache(item : TodoItem) : ItemFragment {
-
-        val id = item.id
-
-        if( !cellCache.containsKey(id) ) {
-
-            val itemFragment = find(ItemFragment::class)  // prototype
-            itemFragment.load( item )
-            cellCache.put( id, itemFragment )
-        }
-
-        return cellCache[id]!!
-    }
-
-    private fun removeItemFromCache(item : TodoItem) {
-        cellCache.remove( item.id )
-    }
 }
 

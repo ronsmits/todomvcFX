@@ -10,6 +10,7 @@ import javafx.util.Callback
 import todomvcfx.tornadofx.controllers.MainViewController
 import todomvcfx.tornadofx.model.TodoItem
 import tornadofx.View
+import tornadofx.cellFragment
 import tornadofx.onChange
 import java.util.function.Predicate
 
@@ -55,7 +56,7 @@ class MainView : View() {
             selectAll.isSelected = false
         }
 
-        lvItems.cellFactory = Callback { TodoItemListCell() }
+        lvItems.cellFragment(TodoItemFragment::class)
 
         controller.itemsProperty.get().addListener(
             ListChangeListener<TodoItem> {

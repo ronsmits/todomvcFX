@@ -9,7 +9,7 @@ import tornadofx.App
  *
  * @author carl
  */
-class TornadoFXApp : App(MainView::class)
+class TornadoFXApp : App(MainView::class, Styles::class)
 
 fun main(args: Array<String>) {
     Application.launch(TornadoFXApp::class.java, *args)
