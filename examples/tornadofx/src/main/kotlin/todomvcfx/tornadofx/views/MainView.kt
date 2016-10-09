@@ -3,15 +3,14 @@ package todomvcfx.tornadofx.views
 import javafx.beans.binding.Bindings
 import javafx.beans.binding.When
 import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.value.ChangeListener
 import javafx.collections.ListChangeListener
 import javafx.scene.control.*
 import javafx.scene.layout.VBox
-import javafx.util.Callback
 import todomvcfx.tornadofx.controllers.MainViewController
 import todomvcfx.tornadofx.model.TodoItem
 import tornadofx.View
 import tornadofx.cellFragment
-import tornadofx.onChange
 import java.util.function.Predicate
 
 /**
@@ -33,6 +32,13 @@ class MainView : View() {
 
     val controller : MainViewController by inject()
 
+    val selectAllListener = ChangeListener<Boolean> {
+        obs, ob, nv ->
+        lvItems.items.forEach { itm ->
+            itm.completed = nv  // also sets model b/c of reference
+        }
+    }
+
     init {
 
         lvItems.itemsProperty().bind( controller.viewableItemsProperty )
@@ -50,10 +56,14 @@ class MainView : View() {
         )
 
         addInput.setOnAction {
+
             val newItem = TodoItem(addInput.text, false)
             controller.addItem( newItem )
             addInput.clear()
+
+            selectAll.selectedProperty().removeListener( selectAllListener )
             selectAll.isSelected = false
+            selectAll.selectedProperty().addListener( selectAllListener )
         }
 
         lvItems.cellFragment(TodoItemFragment::class)
@@ -70,11 +80,13 @@ class MainView : View() {
                 ).greaterThan(0)
         )
 
-        selectAll.selectedProperty().onChange { nv ->
+/*        selectAll.selectedProperty().onChange { nv ->
             lvItems.items.forEach { itm ->
                 itm.completed = nv  // also sets model b/c of reference
             }
-        }
+        }*/
+
+        selectAll.selectedProperty().addListener( selectAllListener )
 
         itemsLeftLabel.text = "0 items left"
     }
