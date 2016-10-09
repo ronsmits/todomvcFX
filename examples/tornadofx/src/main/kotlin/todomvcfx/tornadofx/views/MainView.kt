@@ -64,6 +64,10 @@ class MainView : View() {
             selectAll.selectedProperty().removeListener( selectAllListener )
             selectAll.isSelected = false
             selectAll.selectedProperty().addListener( selectAllListener )
+
+            if( stateGroup.selectedToggle.equals(showCompleted ) ) {
+                stateGroup.selectToggle(showActive)
+            }
         }
 
         lvItems.cellFragment(TodoItemFragment::class)
