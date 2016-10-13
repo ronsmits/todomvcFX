@@ -1,5 +1,7 @@
 package todomvcfx.tornadofx.controllers
 
+import javafx.beans.property.ReadOnlyIntegerProperty
+import javafx.beans.property.SimpleIntegerProperty
 import todomvcfx.tornadofx.model.TodoItem
 import todomvcfx.tornadofx.model.TodoItemModel
 import tornadofx.Controller
@@ -28,10 +30,15 @@ class MainViewController : Controller() {
         todoItemModel.remove( item )
     }
 
+    fun completeAnItem() {
+        todoItemModel.completeAnItem()
+    }
+
     val filterByProperty = todoItemModel.filterByProperty
 
     val viewableItemsProperty = todoItemModel.viewableItemsProperty
 
     val itemsProperty = todoItemModel.itemsProperty
-}
 
+    val numActiveItemsProperty = todoItemModel.numActiveItemsProperty
+}

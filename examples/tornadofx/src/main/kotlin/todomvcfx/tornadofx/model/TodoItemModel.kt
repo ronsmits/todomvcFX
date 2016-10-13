@@ -1,8 +1,6 @@
 package todomvcfx.tornadofx.model
 
-import javafx.beans.property.ObjectProperty
-import javafx.beans.property.ReadOnlyObjectProperty
-import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.*
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.collections.transformation.FilteredList
@@ -29,11 +27,21 @@ class TodoItemModel {
     val filterByProperty: ObjectProperty<Predicate<in TodoItem>>
         get() = viewableItemsProperty.get().predicateProperty()
 
+    val numActiveItemsProperty: IntegerProperty = SimpleIntegerProperty();
+
     fun add(tdi: TodoItem) {
         itemsProperty.get().add(tdi)
+        numActiveItemsProperty.set( numActiveItemsProperty.get()+1 )
     }
 
     fun remove(tdi: TodoItem) : Boolean {
+        if( !tdi.completed ) {
+            numActiveItemsProperty.set( numActiveItemsProperty.get()-1 )
+        }
         return itemsProperty.get().remove(tdi)
+    }
+
+    fun completeAnItem() {
+        numActiveItemsProperty.set( numActiveItemsProperty.get()-1 )
     }
 }

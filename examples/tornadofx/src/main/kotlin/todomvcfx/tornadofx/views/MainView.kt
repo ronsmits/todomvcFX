@@ -4,7 +4,6 @@ import javafx.beans.binding.Bindings
 import javafx.beans.binding.When
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ChangeListener
-import javafx.collections.ListChangeListener
 import javafx.scene.control.*
 import javafx.scene.layout.VBox
 import todomvcfx.tornadofx.controllers.MainViewController
@@ -72,30 +71,16 @@ class MainView : View() {
 
         lvItems.cellFragment(TodoItemFragment::class)
 
-        controller.itemsProperty.get().addListener(
-            ListChangeListener<TodoItem> {
-                change ->
-                    updateItemsLeftLabel()
-        })
-
         selectAll.visibleProperty().bind(
                 Bindings.size(
                         controller.viewableItemsProperty.get()
                 ).greaterThan(0)
         )
 
-/*        selectAll.selectedProperty().onChange { nv ->
-            lvItems.items.forEach { itm ->
-                itm.completed = nv  // also sets model b/c of reference
-            }
-        }*/
-
         selectAll.selectedProperty().addListener( selectAllListener )
 
-        itemsLeftLabel.text = "0 items left"
-    }
-
-    fun updateItemsLeftLabel() {
-        itemsLeftLabel.text = "${controller.itemsProperty.get().count { it.completed.not() }} items left"
+        itemsLeftLabel.textProperty().bind(
+                Bindings.concat(controller.numActiveItemsProperty.asString(), " items left")
+        )
     }
 }

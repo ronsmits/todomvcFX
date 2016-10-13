@@ -8,7 +8,10 @@ import javafx.scene.layout.HBox
 import todomvcfx.tornadofx.Styles
 import todomvcfx.tornadofx.controllers.MainViewController
 import todomvcfx.tornadofx.model.TodoItem
-import tornadofx.*
+import tornadofx.ListCellFragment
+import tornadofx.bind
+import tornadofx.onChange
+import tornadofx.toggleClass
 
 /**
  * View component representing a row in the TodoItem ListView
@@ -23,9 +26,11 @@ class TodoItemFragment : ListCellFragment<TodoItem>() {
     val contentBox: HBox by fxid()
     val contentInput: TextField by fxid()
     val controller: MainViewController by inject()
-    val mainView: MainView by inject()
 
     init {
+
+        println("creating fragment ${this?.hashCode()}")
+
         deleteButton.visibleProperty().bind(root.hoverProperty())
 
         contentLabel.setOnMouseClicked { event ->
@@ -44,15 +49,30 @@ class TodoItemFragment : ListCellFragment<TodoItem>() {
             }
         }
 
+        contentLabel.toggleClass(Styles.strikethrough, completed.selectedProperty())
+
         completed.selectedProperty().onChange {
-           mainView.updateItemsLeftLabel()
+            nv ->
+                if( nv ) {
+                    controller.completeAnItem()
+                }
         }
 
-        itemProperty.onChange {
-            completed.bind(item.completedProperty)
-            contentLabel.toggleClass(Styles.strikethrough, completed.selectedProperty())
-            contentLabel.bind(item.textProperty)
-            contentInput.bind(item.textProperty)
+        itemProperty.addListener {
+
+            obs, ov, nv ->
+
+                println("item property changing for fragment ${this?.item?.hashCode()} ov=${ov?.id} nv=${nv?.id}")
+
+                if (ov != null) {
+
+                    completed.selectedProperty().unbindBidirectional(ov.completedProperty)
+                    contentInput.textProperty().unbindBidirectional(ov.textProperty)
+                    contentLabel.textProperty().unbind()
+                }
+                completed.bind(item.completedProperty)
+                contentInput.bind(item.textProperty)
+                contentLabel.bind(item.textProperty, readonly = true)
         }
     }
 
