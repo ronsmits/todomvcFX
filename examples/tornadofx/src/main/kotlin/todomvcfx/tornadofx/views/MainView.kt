@@ -10,7 +10,7 @@ import javafx.scene.layout.VBox
 import todomvcfx.tornadofx.controllers.MainViewController
 import todomvcfx.tornadofx.model.TodoItem
 import tornadofx.View
-import tornadofx.cellFragment
+import tornadofx.onChange
 import java.util.function.Predicate
 
 /**
@@ -70,7 +70,7 @@ class MainView : View() {
             }
         }
 
-        lvItems.cellFragment(TodoItemFragment::class)
+        lvItems.cellFactory = Callback { TodoItemListCell() }
 
         controller.itemsProperty.get().addListener(
             ListChangeListener<TodoItem> {
