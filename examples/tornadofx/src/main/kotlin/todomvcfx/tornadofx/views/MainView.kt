@@ -7,6 +7,7 @@ import javafx.beans.value.ChangeListener
 import javafx.collections.ListChangeListener
 import javafx.scene.control.*
 import javafx.scene.layout.VBox
+import javafx.util.Callback
 import todomvcfx.tornadofx.controllers.MainViewController
 import todomvcfx.tornadofx.model.TodoItem
 import tornadofx.View
