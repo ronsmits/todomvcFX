@@ -20,6 +20,8 @@ import java.util.function.Predicate
  * TodoItem model allows filtering through binding a predicate to the filterBy/filterByProperty members.  If no
  * filtering is set, all items are shown.
  *
+ * A property of the number of active items is maintained for binding
+ *
  * @author carl
  */
 class TodoItemModel : Component(), Injectable {
@@ -31,7 +33,9 @@ class TodoItemModel : Component(), Injectable {
     val filterByProperty: ObjectProperty<Predicate<in TodoItem>>
         get() = viewableItemsProperty.get().predicateProperty()
 
-    val numActiveItemsProperty: IntegerProperty = SimpleIntegerProperty();
+    val numActiveItemsProperty: IntegerProperty = SimpleIntegerProperty()
+
+    private val cellCache : MutableMap<Int, ItemFragment> = mutableMapOf()
 
     fun add(tdi: TodoItem) {
         numActiveItemsProperty.set( numActiveItemsProperty.get()+1 )
@@ -46,14 +50,12 @@ class TodoItemModel : Component(), Injectable {
 
         val removed = itemsProperty.get().remove( tdi )
 
-        if( removed != null ) {
+        if( removed ) {
             removeItemFromCache(tdi)
         }
 
         return true
     }
-
-    private val cellCache : MutableMap<Int, ItemFragment> = mutableMapOf()
 
     fun readCache(item : TodoItem) : ItemFragment {
 

@@ -4,13 +4,12 @@ import javafx.beans.binding.Bindings
 import javafx.beans.binding.When
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ChangeListener
-import javafx.collections.ListChangeListener
 import javafx.scene.control.*
 import javafx.scene.layout.VBox
-import javafx.util.Callback
 import todomvcfx.tornadofx.model.TodoItem
 import todomvcfx.tornadofx.model.TodoItemModel
 import tornadofx.View
+import tornadofx.cellCache
 import java.util.function.Predicate
 
 /**
@@ -65,12 +64,16 @@ class MainView : View() {
             selectAll.isSelected = false
             selectAll.selectedProperty().addListener( selectAllListener )
 
-            if( stateGroup.selectedToggle.equals(showCompleted ) ) {
+            if( stateGroup.selectedToggle == showCompleted ) {
                 stateGroup.selectToggle(showActive)
             }
         }
 
-        lvItems.cellFactory = Callback { TodoItemListCell() }
+        //lvItems.cellFactory = Callback { TodoItemListCell() }
+
+        lvItems.cellCache {
+            model.readCache(it).root
+        }
 
         selectAll.visibleProperty().bind(
                 Bindings.size(

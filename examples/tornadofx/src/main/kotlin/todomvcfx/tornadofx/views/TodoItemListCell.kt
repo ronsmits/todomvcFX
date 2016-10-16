@@ -9,6 +9,7 @@ import tornadofx.find
  * Custom ListCell for a TodoItem and controls
  *
  */
+@Deprecated("using cellCache instead of cellFactory")
 class TodoItemListCell : ListCell<TodoItem>() {
 
     val model : TodoItemModel = find(TodoItemModel::class)
