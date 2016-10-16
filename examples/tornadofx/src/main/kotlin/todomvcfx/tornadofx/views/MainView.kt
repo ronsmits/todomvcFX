@@ -8,10 +8,9 @@ import javafx.collections.ListChangeListener
 import javafx.scene.control.*
 import javafx.scene.layout.VBox
 import javafx.util.Callback
-import todomvcfx.tornadofx.controllers.MainViewController
 import todomvcfx.tornadofx.model.TodoItem
+import todomvcfx.tornadofx.model.TodoItemModel
 import tornadofx.View
-import tornadofx.onChange
 import java.util.function.Predicate
 
 /**
@@ -31,7 +30,7 @@ class MainView : View() {
     val showActive : ToggleButton by fxid()
     val showCompleted : ToggleButton by fxid()
 
-    val controller : MainViewController by inject()
+    val model : TodoItemModel by inject()
 
     val selectAllListener = ChangeListener<Boolean> {
         obs, ob, nv ->
@@ -42,9 +41,9 @@ class MainView : View() {
 
     init {
 
-        lvItems.itemsProperty().bind( controller.viewableItemsProperty )
+        lvItems.itemsProperty().bind( model.viewableItemsProperty )
 
-        controller.filterByProperty.bind(
+        model.filterByProperty.bind(
 
                 When(stateGroup.selectedToggleProperty().isEqualTo(showActive))
                         .then( SimpleObjectProperty<Predicate<TodoItem>>( Predicate<TodoItem>( {tdi -> tdi.completed.not()} ) ) )
@@ -59,7 +58,7 @@ class MainView : View() {
         addInput.setOnAction {
 
             val newItem = TodoItem(addInput.text, false)
-            controller.addItem( newItem )
+            model.add( newItem )
             addInput.clear()
 
             selectAll.selectedProperty().removeListener( selectAllListener )
@@ -73,7 +72,7 @@ class MainView : View() {
 
         lvItems.cellFactory = Callback { TodoItemListCell() }
 
-        controller.itemsProperty.get().addListener(
+        model.itemsProperty.get().addListener(
             ListChangeListener<TodoItem> {
                 change ->
                     updateItemsLeftLabel()
@@ -81,7 +80,7 @@ class MainView : View() {
 
         selectAll.visibleProperty().bind(
                 Bindings.size(
-                        controller.viewableItemsProperty.get()
+                        model.viewableItemsProperty.get()
                 ).greaterThan(0)
         )
 
@@ -97,6 +96,6 @@ class MainView : View() {
     }
 
     fun updateItemsLeftLabel() {
-        itemsLeftLabel.text = "${controller.itemsProperty.get().count { it.completed.not() }} items left"
+        itemsLeftLabel.text = "${model.itemsProperty.get().count { it.completed.not() }} items left"
     }
 }

@@ -5,8 +5,8 @@ import javafx.scene.control.CheckBox
 import javafx.scene.control.Label
 import javafx.scene.control.TextField
 import javafx.scene.layout.HBox
-import todomvcfx.tornadofx.controllers.MainViewController
 import todomvcfx.tornadofx.model.TodoItem
+import todomvcfx.tornadofx.model.TodoItemModel
 import tornadofx.Fragment
 import tornadofx.bind
 import tornadofx.onChange
@@ -28,7 +28,7 @@ class ItemFragment : Fragment() {
 
     var item : TodoItem? = null
 
-    val controller : MainViewController by inject()
+    val model : TodoItemModel by inject()
     val mainView: MainView by inject()
 
     init {
@@ -37,7 +37,7 @@ class ItemFragment : Fragment() {
 
     fun delete() {
         if( item != null ) {
-            controller.removeItem( item!! )
+            model.remove( item!! )
         }
     }
 

@@ -1,8 +1,8 @@
 package todomvcfx.tornadofx.views
 
 import javafx.scene.control.ListCell
-import todomvcfx.tornadofx.controllers.MainViewController
 import todomvcfx.tornadofx.model.TodoItem
+import todomvcfx.tornadofx.model.TodoItemModel
 import tornadofx.find
 
 /**
@@ -11,7 +11,7 @@ import tornadofx.find
  */
 class TodoItemListCell : ListCell<TodoItem>() {
 
-    val controller : MainViewController = find(MainViewController::class)
+    val model : TodoItemModel = find(TodoItemModel::class)
 
     override fun updateItem(item: TodoItem?, empty: Boolean) {
         super.updateItem(item, empty)
@@ -20,7 +20,7 @@ class TodoItemListCell : ListCell<TodoItem>() {
             graphic = null
         } else {
             text = null
-            graphic = controller.readCache(item).root
+            graphic = model.readCache(item).root
         }
     }
 

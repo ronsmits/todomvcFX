@@ -6,6 +6,10 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.collections.transformation.FilteredList
+import todomvcfx.tornadofx.views.ItemFragment
+import tornadofx.Component
+import tornadofx.Injectable
+import tornadofx.find
 import java.util.function.Predicate
 
 /**
@@ -20,7 +24,7 @@ import java.util.function.Predicate
  *
  * @author carl
  */
-class TodoItemModel {
+class TodoItemModel : Component(), Injectable {
 
     val itemsProperty : ReadOnlyObjectProperty<ObservableList<TodoItem>> = SimpleObjectProperty(FXCollections.observableArrayList())
 
@@ -34,6 +38,33 @@ class TodoItemModel {
     }
 
     fun remove(tdi: TodoItem) : Boolean {
-        return itemsProperty.get().remove(tdi)
+
+        val removed = itemsProperty.get().remove( tdi )
+        if( removed != null ) {
+            removeItemFromCache(tdi)
+        }
+
+        return true
     }
+
+    private val cellCache : MutableMap<Int, ItemFragment> = mutableMapOf()
+
+    fun readCache(item : TodoItem) : ItemFragment {
+
+        val id = item.id
+
+        if( !cellCache.containsKey(id) ) {
+
+            val itemFragment = find(ItemFragment::class)  // prototype
+            itemFragment.load( item )
+            cellCache.put( id, itemFragment )
+        }
+
+        return cellCache[id]!!
+    }
+
+    private fun removeItemFromCache(item : TodoItem) {
+        cellCache.remove( item.id )
+    }
+
 }
