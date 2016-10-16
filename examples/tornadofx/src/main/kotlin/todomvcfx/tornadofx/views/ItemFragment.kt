@@ -5,6 +5,7 @@ import javafx.scene.control.CheckBox
 import javafx.scene.control.Label
 import javafx.scene.control.TextField
 import javafx.scene.layout.HBox
+import todomvcfx.tornadofx.Styles
 import todomvcfx.tornadofx.model.TodoItem
 import todomvcfx.tornadofx.model.TodoItemModel
 import tornadofx.Fragment
@@ -29,7 +30,6 @@ class ItemFragment : Fragment() {
     var item : TodoItem? = null
 
     val model : TodoItemModel by inject()
-    val mainView: MainView by inject()
 
     init {
         deleteButton.visibleProperty().bind( root.hoverProperty() )
@@ -48,10 +48,17 @@ class ItemFragment : Fragment() {
 
         completed.bind( item.completedProperty )
 
-        item.completedProperty.onChange { nv ->
-            contentLabel.toggleClass("strikethrough", nv ?: false)
-            mainView.updateItemsLeftLabel()
+        completed.selectedProperty().onChange {
+            nv ->
+            if( nv ) {
+                model.completeAnItem()
+            } else {
+                model.reactivateItem()
+            }
         }
+
+        contentLabel.toggleClass(Styles.strikethrough, completed.selectedProperty())
+
         contentLabel.textProperty().bind( item.textProperty )
         contentInput.textProperty().bindBidirectional( item.textProperty )
 

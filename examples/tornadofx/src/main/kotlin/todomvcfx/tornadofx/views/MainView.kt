@@ -72,30 +72,16 @@ class MainView : View() {
 
         lvItems.cellFactory = Callback { TodoItemListCell() }
 
-        model.itemsProperty.get().addListener(
-            ListChangeListener<TodoItem> {
-                change ->
-                    updateItemsLeftLabel()
-        })
-
         selectAll.visibleProperty().bind(
                 Bindings.size(
                         model.viewableItemsProperty.get()
                 ).greaterThan(0)
         )
 
-/*        selectAll.selectedProperty().onChange { nv ->
-            lvItems.items.forEach { itm ->
-                itm.completed = nv  // also sets model b/c of reference
-            }
-        }*/
-
         selectAll.selectedProperty().addListener( selectAllListener )
 
-        itemsLeftLabel.text = "0 items left"
-    }
-
-    fun updateItemsLeftLabel() {
-        itemsLeftLabel.text = "${model.itemsProperty.get().count { it.completed.not() }} items left"
+        itemsLeftLabel.textProperty().bind(
+                Bindings.concat(model.numActiveItemsProperty.asString(), " items left")
+        )
     }
 }
