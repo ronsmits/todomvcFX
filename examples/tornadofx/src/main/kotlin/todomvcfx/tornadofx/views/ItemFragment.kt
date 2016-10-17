@@ -35,17 +35,17 @@ class ItemFragment : Fragment() {
         deleteButton.visibleProperty().bind( root.hoverProperty() )
     }
 
-    fun delete() {
+    fun delete() {  // in use; called from .fxml
         if( item != null ) {
             model.remove( item!! )
         }
     }
 
-
     fun load(item : TodoItem) {
 
         this.item = item
 
+        // init checkbox
         completed.bind( item.completedProperty )
 
         completed.selectedProperty().onChange {
@@ -57,10 +57,10 @@ class ItemFragment : Fragment() {
             }
         }
 
+        // init read-only view label
         contentLabel.toggleClass(Styles.strikethrough, completed.selectedProperty())
 
         contentLabel.textProperty().bind( item.textProperty )
-        contentInput.textProperty().bindBidirectional( item.textProperty )
 
         contentLabel.setOnMouseClicked { event ->
             if (event.clickCount > 1) {
@@ -68,14 +68,18 @@ class ItemFragment : Fragment() {
             }
         }
 
+        // init edit textfield
+        contentInput.textProperty().bindBidirectional( item.textProperty )
+
         contentInput.setOnAction {
             toggleEditMode(false)
         }
 
-        contentInput.focusedProperty().onChange { newValue ->
-            if (!(newValue ?: false)) {
-                toggleEditMode(false)
-            }
+        contentInput.focusedProperty().onChange {
+            newValue ->
+                if (!(newValue)) {
+                    toggleEditMode(false)
+                }
         }
     }
 

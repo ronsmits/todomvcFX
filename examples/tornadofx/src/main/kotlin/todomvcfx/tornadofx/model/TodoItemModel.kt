@@ -35,8 +35,6 @@ class TodoItemModel : Component(), Injectable {
 
     val numActiveItemsProperty: IntegerProperty = SimpleIntegerProperty()
 
-    private val cellCache : MutableMap<Int, ItemFragment> = mutableMapOf()
-
     fun add(tdi: TodoItem) {
         numActiveItemsProperty.set( numActiveItemsProperty.get()+1 )
         itemsProperty.get().add(tdi)
@@ -48,31 +46,9 @@ class TodoItemModel : Component(), Injectable {
             numActiveItemsProperty.set( numActiveItemsProperty.get()-1 )
         }
 
-        val removed = itemsProperty.get().remove( tdi )
-
-        if( removed ) {
-            removeItemFromCache(tdi)
-        }
+        itemsProperty.get().remove( tdi )
 
         return true
-    }
-
-    fun readCache(item : TodoItem) : ItemFragment {
-
-        val id = item.id
-
-        if( !cellCache.containsKey(id) ) {
-
-            val itemFragment = find(ItemFragment::class)  // prototype
-            itemFragment.load( item )
-            cellCache.put( id, itemFragment )
-        }
-
-        return cellCache[id]!!
-    }
-
-    private fun removeItemFromCache(item : TodoItem) {
-        cellCache.remove( item.id )
     }
 
     fun completeAnItem() {

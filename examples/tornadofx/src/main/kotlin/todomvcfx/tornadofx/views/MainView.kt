@@ -10,6 +10,7 @@ import todomvcfx.tornadofx.model.TodoItem
 import todomvcfx.tornadofx.model.TodoItemModel
 import tornadofx.View
 import tornadofx.cellCache
+import tornadofx.find
 import java.util.function.Predicate
 
 /**
@@ -69,10 +70,10 @@ class MainView : View() {
             }
         }
 
-        //lvItems.cellFactory = Callback { TodoItemListCell() }
-
         lvItems.cellCache {
-            model.readCache(it).root
+            val itemFragment = find(ItemFragment::class)  // prototype
+            itemFragment.load( it )
+            itemFragment.root
         }
 
         selectAll.visibleProperty().bind(
