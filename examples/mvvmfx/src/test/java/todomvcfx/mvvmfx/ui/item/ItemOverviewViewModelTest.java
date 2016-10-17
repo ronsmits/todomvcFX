@@ -2,6 +2,7 @@ package todomvcfx.mvvmfx.ui.item;
 
 import de.saxsys.mvvmfx.MvvmFX;
 import de.saxsys.mvvmfx.utils.notifications.NotificationCenter;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import todomvcfx.mvvmfx.model.TodoItem;
@@ -20,17 +21,22 @@ public class ItemOverviewViewModelTest {
     private TodoItem item2;
     private TodoItem item3;
 
-    private TodoItemStore itemStore;
+    private TodoItemStore itemStore = TodoItemStore.getInstance();
 
     @Before
     public void setup() {
-        itemStore = new TodoItemStore();
-        viewModel = new ItemOverviewViewModel(itemStore);
+        viewModel = new ItemOverviewViewModel();
 
         item1 = new TodoItem("1");
         item2 = new TodoItem("2");
         item3 = new TodoItem("3");
 
+        itemStore.getItems().clear();
+    }
+
+
+    @After
+    public void tearDown() {
         itemStore.getItems().clear();
     }
 

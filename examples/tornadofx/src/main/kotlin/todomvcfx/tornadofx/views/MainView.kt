@@ -1,91 +1,55 @@
 package todomvcfx.tornadofx.views
 
-import javafx.beans.binding.Bindings
 import javafx.beans.binding.When
-import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.value.ChangeListener
-import javafx.scene.control.*
-import javafx.scene.layout.VBox
+import javafx.geometry.Pos
+import todomvcfx.tornadofx.Styles
+import todomvcfx.tornadofx.controllers.MainViewController
 import todomvcfx.tornadofx.model.TodoItem
-import todomvcfx.tornadofx.model.TodoItemModel
-import tornadofx.View
-import tornadofx.cellCache
-import tornadofx.find
-import java.util.function.Predicate
+import tornadofx.*
 
-/**
- * View component for the main UI
- *
- * Created by ronsmits on 24/09/16.
- */
 class MainView : View() {
+    val controller: MainViewController by inject()
+    val todoListView: TodoListView by inject()
 
-    override val root: VBox by fxml("/MainView.fxml")
+    override val root = vbox {
+        alignment = Pos.CENTER
+        label("TODOS").setId(Styles.title)
+        hbox {
+            setId(Styles.addItemRoot)
+            checkbox() {
+                setOnAction {
+                    controller.selectAll(this.isSelected)
+                }
+            }
+            textfield {
+                promptText = "what do you want to do"
+                setOnAction {
+                    controller.addItem(TodoItem(this.text, false))
+                    this.clear()
+                }
+            }
 
-    val addInput : TextField by fxid()
-    val lvItems : ListView<TodoItem> by fxid()
-    val selectAll : CheckBox by fxid()
-    val itemsLeftLabel : Label by fxid()
-    val stateGroup : ToggleGroup by fxid()
-    val showActive : ToggleButton by fxid()
-    val showCompleted : ToggleButton by fxid()
-
-    val model : TodoItemModel by inject()
-
-    val selectAllListener = ChangeListener<Boolean> {
-        obs, ob, nv ->
-        lvItems.items.forEach { itm ->
-            itm.completed = nv  // also sets model b/c of reference
         }
-    }
+        add(todoListView.root)
+        hbox {
+            togglegroup {
+                togglebutton("All") {
+                    isSelected=true
+                }
+                val showActive = togglebutton("Active")
+                val showCompleted = togglebutton("Done")
+                controller.filterByProperty.bind(
 
-    init {
-
-        lvItems.itemsProperty().bind( model.viewableItemsProperty )
-
-        model.filterByProperty.bind(
-
-                When(stateGroup.selectedToggleProperty().isEqualTo(showActive))
-                        .then( SimpleObjectProperty<Predicate<TodoItem>>( Predicate<TodoItem>( {tdi -> tdi.completed.not()} ) ) )
-                        .otherwise(
-                                When(stateGroup.selectedToggleProperty().isEqualTo(showCompleted))
-                                        .then( SimpleObjectProperty<Predicate<TodoItem>>( Predicate<TodoItem>( {tdi -> tdi.completed} ) ) )
-                                        .otherwise( SimpleObjectProperty<Predicate<TodoItem>>( Predicate<TodoItem>( {tdi -> true} ) ))
-                        )
-
-        )
-
-        addInput.setOnAction {
-
-            val newItem = TodoItem(addInput.text, false)
-            model.add( newItem )
-            addInput.clear()
-
-            selectAll.selectedProperty().removeListener( selectAllListener )
-            selectAll.isSelected = false
-            selectAll.selectedProperty().addListener( selectAllListener )
-
-            if( stateGroup.selectedToggle == showCompleted ) {
-                stateGroup.selectToggle(showActive)
+                        When(selectedToggleProperty().isEqualTo(showActive))
+                                .then({ item: TodoItem -> item.completed.not() })
+                                .otherwise(
+                                        When(selectedToggleProperty().isEqualTo(showCompleted))
+                                                .then({ item: TodoItem -> item.completed })
+                                                .otherwise({ item: TodoItem -> true })
+                                )
+                )
             }
         }
-
-        lvItems.cellCache {
-            val itemFragment = find(ItemFragment::class)  // prototype
-            itemFragment.load( it )
-            itemFragment.root
-        }
-
-        selectAll.visibleProperty().bind(
-                Bindings.size(
-                        model.viewableItemsProperty.get()
-                ).greaterThan(0)
-        )
-
-        selectAll.selectedProperty().addListener( selectAllListener )
-
-        itemsLeftLabel.textProperty().bind(
-                Bindings.concat(model.numActiveItemsProperty.asString(), " items left")
-        )
     }
+
 }

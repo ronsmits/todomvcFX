@@ -7,10 +7,6 @@ import tornadofx.getValue
 import tornadofx.setValue
 
 /**
- * Model component for the TornadoFX version of the TodoItem app
- *
- * TodoItem is a property-based domain object for the app.  It includes an id generation function.
- *
  * Created by ronsmits on 24/09/16.
  */
 class TodoItem(text: String, completed: Boolean) {

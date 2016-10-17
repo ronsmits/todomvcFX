@@ -5,18 +5,13 @@ import javafx.scene.control.CheckBox
 import javafx.scene.control.Label
 import javafx.scene.control.TextField
 import javafx.scene.layout.HBox
-import todomvcfx.tornadofx.Styles
+import todomvcfx.tornadofx.controllers.MainViewController
 import todomvcfx.tornadofx.model.TodoItem
-import todomvcfx.tornadofx.model.TodoItemModel
 import tornadofx.Fragment
 import tornadofx.bind
 import tornadofx.onChange
 import tornadofx.toggleClass
 
-/**
- * View component representing a row in the TodoItem ListView
- *
- */
 class ItemFragment : Fragment() {
 
     override val root: HBox by fxml("/ItemFragment.fxml")
@@ -29,38 +24,33 @@ class ItemFragment : Fragment() {
 
     var item : TodoItem? = null
 
-    val model : TodoItemModel by inject()
+    val controller : MainViewController by inject()
+    val mainView: OrginalMainView by inject()
 
     init {
         deleteButton.visibleProperty().bind( root.hoverProperty() )
     }
 
-    fun delete() {  // in use; called from .fxml
+    fun delete() {
         if( item != null ) {
-            model.remove( item!! )
+            mainView.lvItems.items.remove( item )
+//            controller.removeItem( item!! )
         }
     }
+
 
     fun load(item : TodoItem) {
 
         this.item = item
 
-        // init checkbox
         completed.bind( item.completedProperty )
 
-        completed.selectedProperty().onChange {
-            nv ->
-            if( nv ) {
-                model.completeAnItem()
-            } else {
-                model.reactivateItem()
-            }
+        item.completedProperty.onChange { nv ->
+            contentLabel.toggleClass("strikethrough", nv ?: false)
+            mainView.updateItemsLeftLabel()
         }
-
-        // init read-only view label
-        contentLabel.toggleClass(Styles.strikethrough, completed.selectedProperty())
-
         contentLabel.textProperty().bind( item.textProperty )
+        contentInput.textProperty().bindBidirectional( item.textProperty )
 
         contentLabel.setOnMouseClicked { event ->
             if (event.clickCount > 1) {
@@ -68,18 +58,14 @@ class ItemFragment : Fragment() {
             }
         }
 
-        // init edit textfield
-        contentInput.textProperty().bindBidirectional( item.textProperty )
-
         contentInput.setOnAction {
             toggleEditMode(false)
         }
 
-        contentInput.focusedProperty().onChange {
-            newValue ->
-                if (!(newValue)) {
-                    toggleEditMode(false)
-                }
+        contentInput.focusedProperty().onChange { newValue ->
+            if (!(newValue ?: false)) {
+                toggleEditMode(false)
+            }
         }
     }
 

@@ -15,15 +15,13 @@ public class ItemViewModelTest {
 
     private TodoItem item;
 
-    private TodoItemStore itemStore;
+    final TodoItemStore itemStore = TodoItemStore.getInstance();
 
     @Before
     public void setup() {
-        itemStore = new TodoItemStore();
-
         item = new TodoItem("test");
 
-        viewModel = new ItemViewModel(item, () -> itemStore.deleteItem(item));
+        viewModel = new ItemViewModel(item);
         itemStore.getItems().clear();
     }
 
